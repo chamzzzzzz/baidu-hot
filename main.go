@@ -78,12 +78,13 @@ func main() {
 	crawler := &Crawler{}
 	if err := crawler.Crawling(); err != nil {
 		fmt.Println("crawling hot error:", err)
-		return
+		os.Exit(1)
 	}
 
 	now := time.Now()
 	filePath := fmt.Sprintf("%d-%02d-%02d-%02d-%02d-%02d.hot.txt", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 	if err := crawler.SaveToFile(filePath); err != nil {
 		fmt.Println("save to file error:", err)
+		os.Exit(1)
 	}
 }
