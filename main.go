@@ -5,7 +5,9 @@ import (
 	"github.com/anaskhan96/soup"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 )
 
 type Hot struct {
@@ -64,6 +66,14 @@ func (c *Crawler) Crawling() error {
 	return nil
 }
 
+func (c *Crawler) SaveToFile(filePath string) error {
+	content := ""
+	for _, hot := range c.Hots {
+		content += fmt.Sprintf("%s\n%s\n", hot.Title, hot.Summary)
+	}
+	return os.WriteFile(filePath, []byte(content), 0666)
+}
+
 func main() {
 	crawler := &Crawler{}
 	if err := crawler.Crawling(); err != nil {
@@ -71,7 +81,9 @@ func main() {
 		return
 	}
 
-	for i, hot := range crawler.Hots {
-		fmt.Printf("%d [%s] [%s]\n", i, hot.Title, hot.Summary)
+	now := time.Now()
+	filePath := fmt.Sprintf("%d-%02d-%02d-%02d-%02d-%02d.hot.txt", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
+	if err := crawler.SaveToFile(filePath); err != nil {
+		fmt.Println("save to file error:", err)
 	}
 }
