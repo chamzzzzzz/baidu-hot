@@ -1,8 +1,7 @@
-name: Go
+name: Build
 
 on:
   push:
-    branches: [ main ]
 
 jobs:
   build:
@@ -17,3 +16,9 @@ jobs:
 
     - name: Build
       run: go build -v .
+
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: bin
+        path: baidu-hot

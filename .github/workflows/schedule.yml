@@ -1,0 +1,41 @@
+name: Schedule Crawling
+
+on:
+  schedule:
+    - cron: '*/1 * * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download bin
+      uses: dawidd6/action-download-artifact@v2.19.0
+      with:
+        workflow: build.yml
+        name: bin
+        check_artifacts: true
+        search_artifacts: true
+        workflow_conclusion: null
+
+    - name: Download data
+      continue-on-error: true
+      uses: dawidd6/action-download-artifact@v2.19.0
+      with:
+        workflow: schedule.yml
+        name: data
+        check_artifacts: true
+        search_artifacts: true
+        workflow_conclusion: null
+
+    - name: Crawling data
+      run: |
+        chmod +x ./baidu-hot
+        ./baidu-hot
+
+    - name: Upload data
+      uses: actions/upload-artifact@v3
+      with:
+        name: data
+        path: ./*.hot.txt
