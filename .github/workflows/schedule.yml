@@ -2,7 +2,7 @@ name: Schedule Crawling
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '* */2 * * *'
 
 jobs:
   run:
