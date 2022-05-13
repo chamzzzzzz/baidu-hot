@@ -81,7 +81,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	now := time.Now()
+	loc, err := time.LoadLocation("Asia/Chongqing")
+	if err != nil {
+		fmt.Println("load location error:", err)
+		os.Exit(1)
+	}
+
+	now := time.Now().In(loc)
 	filePath := fmt.Sprintf("%d-%02d-%02d-%02d-%02d-%02d.hot.txt", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 	if err := crawler.SaveToFile(filePath); err != nil {
 		fmt.Println("save to file error:", err)
