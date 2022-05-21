@@ -76,9 +76,23 @@ func (c *Crawler) SaveToFile(filePath string) error {
 
 func main() {
 	crawler := &Crawler{}
-	if err := crawler.Crawling(); err != nil {
-		fmt.Println("crawling hot error:", err)
-		os.Exit(1)
+
+	retry := 0
+	for {
+		err := crawler.Crawling()
+		if err == nil {
+			break
+		}
+		fmt.Println("crawling error:", err)
+
+		if retry >= 10 {
+			fmt.Printf("crawling failed after %d retry!\n", retry)
+			os.Exit(1)
+		}
+
+		retry++
+		fmt.Printf("crawling retry after %ds.\n", retry)
+		time.Sleep(time.Duration(retry) * time.Second)
 	}
 
 	loc, err := time.LoadLocation("Asia/Chongqing")
