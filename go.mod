@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/anaskhan96/soup v1.2.5
 	github.com/mattn/go-sqlite3 v1.14.13
+	github.com/robfig/cron/v3 v3.0.1
 )
 
 require (

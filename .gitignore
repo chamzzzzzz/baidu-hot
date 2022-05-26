@@ -1,2 +1,3 @@
 /baidu-hot
 *.hot.txt
+*.sqlite

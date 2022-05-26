@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/anaskhan96/soup"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/robfig/cron/v3"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -107,6 +109,14 @@ func (a *Archiver) Archiving() error {
 	}
 	sort.Strings(fileNames)
 
+	if len(fileNames) == 0 {
+		return nil
+	}
+
+	if err := os.Mkdir("./archived", 0750); err != nil && !os.IsExist(err) {
+		return err
+	}
+
 	tx, err := a.db.Begin()
 	if err != nil {
 		return err
@@ -150,6 +160,10 @@ func (a *Archiver) Archiving() error {
 		archive.Count = count
 		archive.IgnoreCount = ignoreCount
 		a.Archives = append(a.Archives, archive)
+
+		if err := os.Rename(archive.Source, "./archived/"+archive.Source); err != nil {
+			return err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -160,7 +174,7 @@ func (a *Archiver) Archiving() error {
 }
 
 func (a *Archiver) prepare() error {
-	db, err := sql.Open("sqlite3", "hot.db")
+	db, err := sql.Open("sqlite3", "hot.sqlite")
 	if err != nil {
 		return err
 	}
@@ -262,6 +276,28 @@ func crawling() int {
 	return 0
 }
 
+func scheduling() int {
+	loc, err := time.LoadLocation("Asia/Chongqing")
+	if err != nil {
+		fmt.Println("scheduling load location error:", err)
+		return 1
+	}
+
+	logger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
+	c := cron.New(
+		cron.WithLocation(loc),
+		cron.WithLogger(logger),
+		cron.WithChain(cron.Recover(logger), cron.SkipIfStillRunning(logger)),
+	)
+
+	c.AddFunc("5 * * * *", func() {
+		crawling()
+		archiving()
+	})
+	c.Run()
+	return 0
+}
+
 func main() {
 	if len(os.Args) <= 1 {
 		os.Exit(crawling())
@@ -269,6 +305,10 @@ func main() {
 
 	if os.Args[1] == "archive" {
 		os.Exit(archiving())
+	}
+
+	if os.Args[1] == "schedule" {
+		os.Exit(scheduling())
 	}
 
 	fmt.Println("invalid args!")
